@@ -557,7 +557,7 @@ def replace(connection, module):
     as_group = connection.get_all_groups(names=[group_name])[0]
     wait_for_new_inst(module, connection, group_name, wait_timeout, as_group.min_size, 'viable_instances')
     props = get_properties(as_group)
-    instances = props['instances']
+    instances = props.get('instances', [])
     if replace_instances:
         instances = replace_instances
     # check to see if instances are replaceable if checking launch configs
@@ -599,7 +599,7 @@ def replace(connection, module):
     wait_for_elb(connection, module, group_name)
     as_group = connection.get_all_groups(names=[group_name])[0]
     props = get_properties(as_group)
-    instances = props['instances']
+    instances = props.get('instances', [])
     if replace_instances:
         instances = replace_instances
     log.debug("beginning main loop")
@@ -626,7 +626,7 @@ def get_instances_by_lc(props, lc_check, initial_instances):
     old_instances = []
     # old instances are those that have the old launch config
     if lc_check:
-        for i in props['instances']:
+        for i in props.get('instances', []):
             if props['instance_facts'][i]['launch_config_name']  == props['launch_config_name']:
                 new_instances.append(i)
             else:
@@ -634,7 +634,7 @@ def get_instances_by_lc(props, lc_check, initial_instances):
 
     else:
         log.debug("Comparing initial instances with current: {0}".format(initial_instances))
-        for i in props['instances']:
+        for i in props.get('instances', []):
             if i not in initial_instances:
                 new_instances.append(i)
             else:
@@ -647,7 +647,7 @@ def get_instances_by_lc(props, lc_check, initial_instances):
 
 def list_purgeable_instances(props, lc_check, replace_instances, initial_instances):
     instances_to_terminate = []
-    instances = ( inst_id for inst_id in replace_instances if inst_id in props['instances'])
+    instances = ( inst_id for inst_id in replace_instances if inst_id in props.get('instances', []))
 
     # check to make sure instances given are actually in the given ASG
     # and they have a non-current launch config
